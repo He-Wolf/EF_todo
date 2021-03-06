@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EF_todo.Models;
+using EF_todo.Services;
 
 namespace EF_todo.Controllers
 {
@@ -13,25 +14,25 @@ namespace EF_todo.Controllers
     [ApiController]
     public class TodoItemsController : ControllerBase
     {
-        private readonly TodoContext _context;
+        private readonly TodoService _todoService;
 
-        public TodoItemsController(TodoContext context)
+        public TodoItemsController(TodoService todoService)
         {
-            _context = context;
+            _todoService = todoService;
         }
 
         // GET: api/TodoItems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItem()
         {
-            return await _context.TodoItem.ToListAsync();
+            return await _todoService.FindAllAsync();
         }
 
         // GET: api/TodoItems/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
         {
-            var todoItem = await _context.TodoItem.FindAsync(id);
+            var todoItem = await _todoService.FindByIdAsync(id);
 
             if (todoItem == null)
             {
@@ -52,23 +53,7 @@ namespace EF_todo.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(todoItem).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TodoItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await _todoService.UpdateAsync(todoItem);
 
             return NoContent();
         }
@@ -79,8 +64,7 @@ namespace EF_todo.Controllers
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
         {
-            _context.TodoItem.Add(todoItem);
-            await _context.SaveChangesAsync();
+            await _todoService.CreateAsync(todoItem);
 
             return CreatedAtAction("GetTodoItem", new { id = todoItem.Id }, todoItem);
         }
@@ -89,21 +73,15 @@ namespace EF_todo.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<TodoItem>> DeleteTodoItem(int id)
         {
-            var todoItem = await _context.TodoItem.FindAsync(id);
+            var todoItem = await _todoService.FindByIdAsync(id);
             if (todoItem == null)
             {
                 return NotFound();
             }
 
-            _context.TodoItem.Remove(todoItem);
-            await _context.SaveChangesAsync();
+            await _todoService.DeleteAsync(todoItem);
 
             return todoItem;
-        }
-
-        private bool TodoItemExists(int id)
-        {
-            return _context.TodoItem.Any(e => e.Id == id);
         }
     }
 }

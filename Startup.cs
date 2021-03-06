@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using EF_todo.Data;
+using EF_todo.Services;
 
 namespace EF_todo
 {
@@ -30,6 +32,8 @@ namespace EF_todo
 
             services.AddDbContext<TodoContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("TodoContext")));
+            
+            services.AddScoped<TodoService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
