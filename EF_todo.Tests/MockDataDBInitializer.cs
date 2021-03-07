@@ -1,6 +1,5 @@
 using EF_todo.Models;
 using EF_todo.Data;
-using System;
 
 namespace EF_todo.Tests
 {

@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +41,38 @@ namespace EF_todo.Tests
             var data = await controller.GetTodoItem();
   
             //Assert
-            Assert.IsType<ActionResult<IEnumerable<TodoItem>>>(data);
+            Assert.IsType<OkObjectResult>(data.Result);
+        }
+        [Fact]
+        public async void Task_GetTodoItems_Return_AllItems()
+        {
+            //Arrange
+            var controller = new TodoItemsController(todoService);
+
+            // Act
+            var data = await controller.GetTodoItem();
+            var result = data.Result as OkObjectResult;
+
+            // Assert
+            var items = Assert.IsType<List<TodoItem>>(result.Value);
+            Assert.Equal(3, items.Count);
+        }
+        [Fact]
+        public async void Task_GetTodoItems_MatchResult()
+        {
+            //Arrange
+            var controller = new TodoItemsController(todoService);
+
+            // Act
+            var data = await controller.GetTodoItem();
+            var result = data.Result as OkObjectResult;
+            
+            // Assert
+            var items = Assert.IsType<List<TodoItem>>(result.Value);
+            Assert.Equal(1, items[0].Id);
+            Assert.Equal("Cleaning", items[0].Title);
+            Assert.Equal("to clean the house", items[0].Description);
+            Assert.True(items[0].IsComplete);
         }
     }
 }

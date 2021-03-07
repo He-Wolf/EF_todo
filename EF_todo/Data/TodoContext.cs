@@ -9,6 +9,6 @@ namespace EF_todo.Data
             : base(options)
         {
         }
-        public DbSet<EF_todo.Models.TodoItem> TodoItem { get; set; }
+        public DbSet<TodoItem> TodoItem { get; set; }
     }
 }

@@ -1,10 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using EF_todo.Models;
 using EF_todo.Services;
 
@@ -25,7 +21,14 @@ namespace EF_todo.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItem()
         {
-            return await _todoService.FindAllAsync();
+            var todoItems = await _todoService.FindAllAsync();
+            
+            if (todoItems == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(await _todoService.FindAllAsync());
         }
 
         // GET: api/TodoItems/5
@@ -39,7 +42,7 @@ namespace EF_todo.Controllers
                 return NotFound();
             }
 
-            return todoItem;
+            return Ok(todoItem);
         }
 
         // PUT: api/TodoItems/5
@@ -51,6 +54,17 @@ namespace EF_todo.Controllers
             if (id != todoItem.Id)
             {
                 return BadRequest();
+            }
+            
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            var _todoItem = await _todoService.FindByIdAsync(id);
+            if (_todoItem == null)
+            {
+                return NotFound();
             }
 
             await _todoService.UpdateAsync(todoItem);
@@ -64,6 +78,11 @@ namespace EF_todo.Controllers
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             await _todoService.CreateAsync(todoItem);
 
             return CreatedAtAction("GetTodoItem", new { id = todoItem.Id }, todoItem);
@@ -81,7 +100,7 @@ namespace EF_todo.Controllers
 
             await _todoService.DeleteAsync(todoItem);
 
-            return todoItem;
+            return Ok(todoItem);
         }
     }
 }
